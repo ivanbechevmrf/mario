@@ -3,15 +3,19 @@ import animationLoop from './utils/core/animationLoop';
 import { loadImage } from './utils/files';
 import coinFactory from './entities/coinFactory';
 
-export default function() {
-    let ctx = document.querySelector('#mycanvas').getContext('2d');
+export default async function() {
+    const ctx = document.querySelector('#mycanvas').getContext('2d');
     let CANVAS_WIDTH = 384,
         CANVAS_HEIGHT = 384;
 
-    let mario;
-    let coin;
+    const mario = await Mario.init();
+
+    const coin = await coinFactory();
+
     let KeyState = {};
-    let image_background, image_brick, image_coin;
+    const image_background = await loadImage('/background.jpg');
+    const image_brick = await loadImage('/brick.png');
+    const image_coin = await loadImage('/coin.png');
 
     let Keys = {
         LEFT: 37,
@@ -30,15 +34,15 @@ export default function() {
     let level = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 1,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-    0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-    0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
-    0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 2, 2, 0, 1,
+    0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0,
+    0, 0, 0, 1, 1, 0, 0, 2, 0, 1, 1, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0, 2, 0, 1, 0, 0, 0, 1,
+    0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0,
+    0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0,
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   ];
 
@@ -78,10 +82,10 @@ export default function() {
         // Turn into a ratio of seconds
         timeDelta /= 1000;
 
-        const marioX = mario.x();
-        const marioY = mario.y();
-        const marioVY = mario.vy();
-        const marioSize = mario.size();
+        const marioX = mario.get('x');
+        const marioY = mario.get('y');
+        const marioVY = mario.get('vy');
+        const marioSize = mario.get('size');
 
         const collisionBelow = checkCollisionBelow(marioX, marioY, marioSize);
         const collisionRight = checkCollisionRight(marioX, marioY, marioSize);
@@ -138,7 +142,7 @@ export default function() {
             }
         }
 
-        ctx.drawImage(mario.image, mario.x(), mario.y());
+        ctx.drawImage(mario.getImage(), mario.get('x'), mario.get('y'));
 
         for (let i = 0; i < entities.length; i++) {
             entities[i].draw(ctx);
@@ -151,30 +155,19 @@ export default function() {
             draw();
         });
 
-        for (let i = 0; i < LEVEL_HEIGHT; i++) {
-            for (let j = 0; j < LEVEL_WIDTH; j++) {
-                let value = level[i * LEVEL_WIDTH + j];
-                if (value === 2) {
-                    entities.push(
-                        coin.create(
-                            j * TILE_SIZE, // x
-                            i * TILE_SIZE // y
-                        )
-                    );
-                }
-            }
-        }
-    }
-
-    async function initialize() {
-        image_background = await loadImage('/background.jpg');
-        image_brick = await loadImage('/brick.png');
-        image_coin = await loadImage('/coin.png');
-
-        mario = await Mario();
-        coin = await coinFactory();
-
-        return new Promise(resolve => resolve(run));
+        // for (let i = 0; i < LEVEL_HEIGHT; i++) {
+        //     for (let j = 0; j < LEVEL_WIDTH; j++) {
+        //         let value = level[i * LEVEL_WIDTH + j];
+        //         if (value === 2) {
+        //             entities.push(
+        //                 coin.create(
+        //                     j * TILE_SIZE, // x
+        //                     i * TILE_SIZE // y
+        //                 )
+        //             );
+        //         }
+        //     }
+        // }
     }
 
     function intersecting(a, b) {
@@ -200,5 +193,5 @@ export default function() {
         KeyState[e.keyCode] = false;
     });
 
-    return { initialize };
+    return run;
 }

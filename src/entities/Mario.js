@@ -1,11 +1,12 @@
 import { loadImage } from '../utils/files';
 
-export default async function createMario() {
-    const image = await loadImage('/mario.png');
-    const gravity = 600;
-    const that = {};
+export default class Mario {
+    constructor(image) {
+        this.image = image;
+    }
 
-    that.state = {
+    gravity = 600;
+    state = {
         x: 0,
         y: 0,
         vy: 0,
@@ -14,66 +15,54 @@ export default async function createMario() {
         size: 32,
     };
 
-    const getters = {
-        x: () => that.state.x,
-        y: () => that.state.y,
-        vy: () => that.state.vy,
-        w: () => that.state.w,
-        h: () => that.state.h,
-        size: () => that.state.size,
-    };
+    static async init() {
+        const marioImage = await loadImage('/mario.png');
+        return new Mario(marioImage);
+    }
 
-    const moveLeft = () => {
-        that.state = {
-            ...that.state,
-            x: that.state.x - 3,
+    set(properties) {
+        this.state = {
+            ...this.state,
+            ...properties,
         };
-    };
+    }
 
-    const moveRight = () => {
-        that.state = {
-            ...that.state,
-            x: that.state.x + 3,
-        };
-    };
+    get(property) {
+        return this.state[property];
+    }
 
-    const jump = () => {
-        that.state = {
-            ...that.state,
-            vy: that.state.vy - 200,
-        };
-    };
+    getImage() {
+        return this.image;
+    }
 
-    const stopFalling = tileSize => {
-        that.state = {
-            ...that.state,
-            y: that.state.y - (that.state.y % tileSize),
+    moveLeft() {
+        this.set({ x: this.state.x - 3 });
+    }
+
+    moveRight() {
+        this.set({ x: this.state.x + 3 });
+    }
+
+    jump() {
+        this.set({ vy: this.state.vy - 200 });
+    }
+
+    stopFalling(tileSize) {
+        this.set({
+            y: this.state.y - (this.state.y % tileSize),
             vy: 0,
-        };
-    };
+        });
+    }
 
-    const addFallVelocity = timeDelta => {
-        that.state = {
-            ...that.state,
-            y: that.state.y + that.state.vy * timeDelta,
-        };
-    };
+    addFallVelocity(timeDelta) {
+        this.set({
+            y: this.state.y + this.state.vy * timeDelta,
+        });
+    }
 
-    const addGravity = timeDelta => {
-        that.state = {
-            ...that.state,
-            vy: that.state.vy + gravity * timeDelta,
-        };
-    };
-
-    return {
-        ...getters,
-        image,
-        moveLeft,
-        moveRight,
-        jump,
-        stopFalling,
-        addFallVelocity,
-        addGravity,
-    };
+    addGravity(timeDelta) {
+        this.set({
+            vy: this.state.vy + this.gravity * timeDelta,
+        });
+    }
 }

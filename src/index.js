@@ -1,5 +1,6 @@
-import Game from './script';
+import gameInit from './script';
 
-const { initialize } = Game();
-
-initialize().then(run => run());
+(async function gameStart() {
+    const run = await gameInit();
+    run();
+})();
