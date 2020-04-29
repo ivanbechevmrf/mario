@@ -18,6 +18,7 @@ function draw() {
     }
   }
 
+
   function loop(timestamp) {
     let timeDelta = timestamp - prevTimestamp;
     prevTimestamp = timestamp;
